@@ -1,0 +1,14 @@
+{
+    "Upper_Limit":1000,
+    "Lower_Limit":0,
+    "Channels": {
+        "16": {
+            "name": "Cherenkov", 
+            "Upper_Limit": 10500,
+            "Lower_Limit": 8000
+        },
+        "15": {
+            "name": "Scintillator"
+        }
+    }
+}

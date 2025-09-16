@@ -1,0 +1,102 @@
+{
+    "Upper_Limit":1000,
+    "Lower_Limit":0,
+    "Channels": {
+        "0": {
+            "name": "0"
+        },
+        "1": {
+            "name": "Cherenkov"
+        },
+        "2": {
+            "name": "Scintillator"
+        },
+        "3": {
+            "name": "Tracker"
+        },
+        "4": {
+            "name": "Canale_4"
+        },
+        "5": {
+            "name": "Canale_5"
+        },
+        "6": {
+            "name": "Italia_1"
+        },
+        "7": {
+            "name": "La7"
+        },
+        "8": {
+            "name": "TeleVomero"
+        },
+        "9": {
+            "name": "Canale_9"
+        },
+        "10": {
+            "name": "Canale_10"
+        },
+        "11": {
+            "name": "Canale_11"
+        },
+        "12": {
+            "name": "Canale_12"
+        },
+        "13": {
+            "name": "Canale_13"
+        },
+        "14": {
+            "name": "Canale_14"
+        },
+        "15": {
+            "name": "Canale_15"
+        },
+        "16": {
+            "name": "Canale_16"
+        },
+        "17": {
+            "name": "Canale_17"
+        },
+        "18": {
+            "name": "Canale_18"
+        },
+        "19": {
+            "name": "Canale_19"
+        },
+        "20": {
+            "name": "Canale_20"
+        },
+        "21": {
+            "name": "Canale_21"
+        },
+        "22": {
+            "name": "Canale_22"
+        },
+        "23": {
+            "name": "Canale_23"
+        },
+        "24": {
+            "name": "Canale_24"
+        },
+        "25": {
+            "name": "Canale_25"
+        },
+        "26": {
+            "name": "Canale_26"
+        },
+        "27": {
+            "name": "Canale_27"
+        },
+        "28": {
+            "name": "Canale_28"
+        },
+        "29": {
+            "name": "Canale_29"
+        },
+        "30": {
+            "name": "Canale_30"
+        },
+        "31": {
+            "name": "Canale_31"
+        }
+    }
+}
