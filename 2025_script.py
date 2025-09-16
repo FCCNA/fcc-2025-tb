@@ -12,7 +12,7 @@ parser.add_argument('--run_indices', type=str, nargs='+', required=True,
                     help='Run indices to process (integers or ranges like 202:205)')
 parser.add_argument('--path', type=str, 
                     help='Path to the run files, default = /eos/home-g/ggaudino/fcc-testbeam_analysis/nuovi_runs/', 
-                    default='/eos/home-g/ggaudino/fcc-testbeam_analysis/nuovi_runs/')
+                    default='/afs/cern.ch/user/g/ggaudino/')
 parser.add_argument('--plot_check', action='store_true', 
                     help='Enable plotting checks')
 parser.add_argument('--save_wf', action='store_true', 
