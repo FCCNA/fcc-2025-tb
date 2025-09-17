@@ -21,8 +21,8 @@ def media_mobile(arr, window_size):
     return np.convolve(arr, kernel, mode='same')
 
 
-def convert(wf, altri_parametri = 1):
-    return wf * altri_parametri
+def convert(wf, adtovolt = 1, dcoffset = 0):
+    return wf * adtovolt + dcoffset
 
 def read_waveform(run_index, path, om, json_data, save_waveforms):
     run = f'run{run_index:05d}'
@@ -97,7 +97,7 @@ def read_waveform(run_index, path, om, json_data, save_waveforms):
                 continue
             
             name = json_data["Channels"][str(bank_index)]["name"]
-            wf = convert(bank.data, adctovolt[str(bank_index)])
+            wf = convert(bank.data, adctovolt[str(bank_index)], dcoffset[str(bank_index)])
             wf_mediata = media_mobile(wf, window_size=20)
             #print(wf)
             if om:
