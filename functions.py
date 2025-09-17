@@ -46,6 +46,7 @@ def read_waveform(run_index, path, om, json_data, save_waveforms):
 
     print("Reading ODB")
     adctovolt = {}
+    dcoffset = {}
     #Channel_Enabled = odb_dict['Equipment']['Trigger']['Settings']['Channel Enable']
     #scale = odb_dict['Equipment']['Trigger']['Settings']['Channel Scale']
     #position = odb_dict['Equipment']['Trigger']['Settings']['Channel Position']
@@ -53,6 +54,7 @@ def read_waveform(run_index, path, om, json_data, save_waveforms):
     #SARA = odb_dict['Equipment']['Trigger']['Settings']['Sample Rate']
     for channel_id in json_data["Channels"]:
         adctovolt[channel_id] = odb_dict["Equipment"]["FeLibFrontend"]["Settings"][f"Channel{channel_id}"]["adctovolts"]
+        dcoffset[channel_id] = odb_dict["Equipment"]["FeLibFrontend"]["Settings"][f"Channel{channel_id}"]["dcoffset"]
     total_events = sum(1 for _ in mfile if not _.header.is_midas_internal_event() and _.header.event_id == 1)
     mfile.jump_to_start()
 
