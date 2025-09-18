@@ -44,4 +44,8 @@ Lanciando
     python3 2025_script.py --run_indices 692 --plot_check
 ```
 salverà dei plot nella cartella `check_plot`, con l'istogramma delle ampiezze e l'istogramma di tutte le waveform. 
-
+Mettendo invece 
+```bash
+    python3 2025_script.py --run_indices 692 --fast_check
+```
+salverà solo i plot di cherenkov e scintillatore (non altri canali) e non salverà il pickle.

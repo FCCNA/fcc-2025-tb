@@ -1,4 +1,5 @@
 {
+    "_DESCRIPTION_": "Configuration file for FCC 2025 test beam FASE 1 (Cherenkov + Scintillator mandatory)",
     "Upper_Limit":1000,
     "Lower_Limit":0,
     "Channels": {
@@ -9,6 +10,18 @@
         },
         "15": {
             "name": "Scintillator"
+        },
+        "13": {
+            "name": "RadioMarte"
+        },
+        "12": {
+            "name": "Boing"
+        },
+        "11": {
+            "name": "Cartoonito"
+        },
+        "10": {
+            "name": "Italia2"
         }
     }
 }

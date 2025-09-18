@@ -12,13 +12,15 @@ parser.add_argument('--run_indices', type=str, nargs='+', required=True,
                     help='Run indices to process (integers or ranges like 202:205)')
 parser.add_argument('--path', type=str, 
                     help='Path to the run files, default = /eos/home-g/ggaudino/fcc-testbeam_analysis/nuovi_runs/', 
-                    default='/afs/cern.ch/user/g/ggaudino/')
+                    default='/eos/home-g/ggaudino/fcc-testbeam_analysis/nuovi_runs/')
 parser.add_argument('--plot_check', action='store_true', 
                     help='Enable plotting checks')
 parser.add_argument('--save_wf', action='store_true', 
                     help='Enable saving waveforms')
 parser.add_argument('--json', default = 'config.json', type = str,
-                    help=' Select JSON for configuration')
+                    help='Select JSON for configuration')
+parser.add_argument('--fast_check', action='store_true',
+                    help='Enable fast check mode')
 args = parser.parse_args()
 
 # Load JSON file
@@ -26,7 +28,8 @@ with open(args.json, 'r') as f:
     json_data = json.load(f)
 
 path = args.path
-plot_check = args.plot_check
+plot_check = (args.plot_check or args.fast_check)
+fast_check = (args.fast_check)
 sw = args.save_wf
 run_indices = []
 for arg in args.run_indices:
@@ -42,6 +45,7 @@ for run_index in run_indices:
     functions.read_waveform(run_index = run_index, 
                             path = path, 
                             om = plot_check,
+                            fc = fast_check,
                             json_data = json_data, 
                             save_waveforms = sw)
 
