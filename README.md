@@ -5,7 +5,7 @@
 Il file principale è `2025_script.py`. 
 Legge i dati dai file di acquisizione e li elabora per l'analisi. Principalemnte converte i run in file pickle, leggibili poi con pandas. 
 ```bash
-    python3 2025_script.py --run_indices 692 693:695 697
+    python3 2025_script.py --runs 692 693:695 697
 ```
 Il programma leggerà solo i canali presenti nel json di configurazione. Di default, legge `config.json`. Per cambiare usare il comando --json.
 Upper Limit e Lower Limit sono numeri i limiti del digitizer. Quelli generali vanno bene per tutti, se per uno specifico canale, ho diversi limiti, inserirli nel canale.
