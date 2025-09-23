@@ -2,13 +2,14 @@
 import json
 import argparse
 import functions
+import os
 # %%
 
 
 
 # %%
 parser = argparse.ArgumentParser(description='Process MIDAS runs')
-parser.add_argument('--run_indices', type=str, nargs='+', required=True, 
+parser.add_argument('--runs', type=str, nargs='+', required=True, 
                     help='Run indices to process (integers or ranges like 202:205)')
 parser.add_argument('--path', type=str, 
                     help='Path to the run files, default = /eos/experiment/drdcalo/maxicc/TBCERN_24Sept2025_vx2730/', 
@@ -21,6 +22,8 @@ parser.add_argument('--json', default = 'config.json', type = str,
                     help='Select JSON for configuration')
 parser.add_argument('--fast_check', action='store_true',
                     help='Enable fast check mode')
+parser.add_argument('--ssh', action='store_true',
+                    help='Copy to INFN Page')
 args = parser.parse_args()
 
 # Load JSON file
@@ -32,7 +35,7 @@ plot_check = (args.plot_check or args.fast_check)
 fast_check = (args.fast_check)
 sw = args.save_wf
 run_indices = []
-for arg in args.run_indices:
+for arg in args.runs:
     if ':' in arg:
         start, end = map(int, arg.split(':'))
         run_indices.extend(range(start, end + 1))
@@ -50,4 +53,3 @@ for run_index in run_indices:
                             save_waveforms = sw)
 
 
-# %%
