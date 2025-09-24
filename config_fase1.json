@@ -1,0 +1,32 @@
+{
+    "Description": "Config di Fase 1",
+    "Channels": {
+        "0": {
+            "name": "PMT"
+        },
+        "2": {
+            "name": "Plastico_MIB_Analog"
+        },
+        "4": {
+            "name": "Chamber_x_1"
+        },
+        "5": {
+            "name": "Chamber_x_2"
+        },
+        "6": {
+            "name": "Chamber_y_1"
+        },
+        "7": {
+            "name": "Chamber_y_2"
+        },
+        "8": {
+            "name": "Scintillator"
+        },
+        "9": {
+            "name": "Cherenkov"
+        },
+        "10": {
+            "name": "Plastico_Big"
+        }
+    }
+}

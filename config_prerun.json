@@ -1,0 +1,23 @@
+{
+    "Description": "Run before the installation, only Logic",
+    "Channels": {
+        "0": {
+            "name": "PMT"
+        },
+        "1": {
+            "name": "Plastico"
+        },
+        "4": {
+            "name": "Chamber_x_1"
+        },
+        "5": {
+            "name": "Chamber_x_2"
+        },
+        "6": {
+            "name": "Chamber_y_1"
+        },
+        "7": {
+            "name": "Chamber_y_2"
+        }
+    }
+}
