@@ -22,8 +22,10 @@ parser.add_argument('--json', default = 'config_fase1.json', type = str,
                     help='Select JSON for configuration')
 parser.add_argument('--fast_check', action='store_true',
                     help='Enable fast check mode')
-parser.add_argument('--avoid', action='store_true',
-                    help='Avoid to read the file')
+parser.add_argument('--write', action='store_true',
+                    help='Create the dataframe the file')
+parser.add_argument('--pathmib', action='store_true',
+                    help='save files to lucchini path')
 args = parser.parse_args()
 
 # Load JSON file
@@ -33,7 +35,7 @@ with open(args.json, 'r') as f:
 path = args.path
 plot_check = (args.plot_check or args.fast_check)
 fast_check = (args.fast_check)
-sw = args.save_wf
+sw = args.not_save_wf
 run_indices = []
 for arg in args.runs:
     if ':' in arg:
@@ -51,7 +53,8 @@ for run_index in run_indices:
                             fc = fast_check,
                             json_data = json_data, 
                             save_waveforms = sw,
-                            avoid = args.avoid)
-    if not args.not_save_wf:
+                            write = args.write,
+                            pathmib = args.pathmib)
+    if args.not_save_wf:
         os.system(f'python3 example_analysis.py --run {run_index}')
 

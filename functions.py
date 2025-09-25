@@ -150,13 +150,16 @@ def find_t0(wf, threshold, times):
 def x_times(pretrigger_time, length_time, length):
     return np.arange(0-pretrigger_time, length_time - pretrigger_time, length_time / length)
     
-def read_waveform(run_index, path, om, fc, json_data, save_waveforms, avoid):
+def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pathmib):
     run = f'run{run_index:05d}'
     mfile = midas.file_reader.MidasFile(path + run + '.mid.gz', use_numpy=True)
     paths = f'check_plot/{run_index}'
     os.makedirs(f'check_plot/{run_index}', exist_ok=True)
-
-    if not avoid:
+    if pathmib:
+        op = '/eos/experiment/drdcalo/maxicc/TBCERN_24Sept2025_vx2730/'
+    else: 
+        op = './'
+    if write:
 
         try:
             # Try to find the special midas event that contains an ODB dump.
@@ -289,9 +292,10 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, avoid):
         output_df = pd.DataFrame(data_for_df)
         output_df.columns = pd.MultiIndex.from_tuples(output_df.columns)
     else:
-        output_df = pd.read_pickle(f'pickles/run{run_index}_wf.pkl')
+
+        output_df = pd.read_pickle(f'{op}pickles/run{run_index}_wf.pkl')
         yaml_output = {}
-        with open(f'yamls/run{run_index}_info.yaml', 'r') as yaml_file:
+        with open(f'{op}yamls/run{run_index}_info.yaml', 'r') as yaml_file:
             yaml_output = yaml.safe_load(yaml_file)
         satur = {}
         for channel_id in json_data["Channels"]:
@@ -307,15 +311,15 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, avoid):
 
 
     if not fc:
-        os.makedirs('pickles', exist_ok=True)
+        os.makedirs(f'{op}pickles', exist_ok=True)
         # Write yaml_output to file
-        yaml_filename = f'yamls/run{run_index}_info.yaml'
-        os.makedirs('yamls', exist_ok=True)
+        yaml_filename = f'{op}yamls/run{run_index}_info.yaml'
+        os.makedirs(f'{op}yamls', exist_ok=True)
         with open(yaml_filename, 'w') as yaml_file:
             yaml.dump(yaml_output, yaml_file)
         print(f"YAML info for run {run_index} saved to {yaml_filename}")
         add = '_wf' if save_waveforms else ''
-        output_df.to_pickle(f'pickles/run{run_index}{add}.pkl')
+        output_df.to_pickle(f'{op}pickles/run{run_index}{add}.pkl')
         print(f"DataFrame for run {run_index} saved with {output_df.shape[0]} events.")
         print(f"Saturated events for run {run_index}: {satur}")
         print("Creating Efficiency Plots")
