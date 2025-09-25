@@ -94,7 +94,7 @@ def create_beam_position_plot(delta_x, delta_y, title, filename, figsize=(10, 8)
 def create_2d_histogram(ax, delta_x, delta_y, title, run_index, colorbar = False):
 
     plot_map = {"cmin": 1e-6, "cmap": "plasma"}
-    h = ax.hist2d(delta_x, delta_y, bins=150, range=((-20, 20), (-20, 20)), **plot_map)
+    h = ax.hist2d(delta_x, delta_y, bins=150, range=((-20, 20), (-20, 40)), **plot_map)
     if colorbar:
         plt.colorbar(h[3], ax=ax, label='Events')
     ax.set_title(f"{title} - Run {run_index}", fontsize=14)
@@ -102,6 +102,46 @@ def create_2d_histogram(ax, delta_x, delta_y, title, run_index, colorbar = False
     ax.set_ylabel("$\\Delta Y$ (mm)", fontsize=12)
     ax.grid(True, alpha=0.3)
     return h
+
+def plot_waveforms_2d(df_chambers, times, yaml, run, use_adc=False):
+    """
+    Create 2D histogram plots of waveforms for Cherenkov and Scintillator detectors.
+    
+    Parameters:
+    - df_chambers: DataFrame with chamber data
+    - times: Time array
+    - yaml: YAML configuration data
+    - run: Run number
+    - use_adc: If True, plot in ADC units; if False, plot in Volts
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(24, 10))
+    
+    unit_type = "ADC Units" if use_adc else "Volt"
+    fig.suptitle(f'Run {run} - Waveforms ({unit_type})', fontsize=16)
+    
+    chambers = ['Cherenkov', 'Scintillator']
+    plot_map = {'cmin': 1e-3, 'cmap': 'plasma'}
+    
+    for i, chamber in enumerate(chambers):
+        if use_adc:
+            wf = df_chambers[chamber]['WF']/yaml[chamber]['adctovolts'] + df_chambers[chamber]['pedestal']
+        else:
+            wf = df_chambers[chamber]['WF']
+            
+        all_times = np.concatenate([np.arange(1, len(wf[j]) + 1) for j in wf.keys()])
+        all_times = times[all_times - 1]  # Convert to actual time values
+        all_wf = np.concatenate([wf[j] for j in wf.keys()])
+        
+        axes[i].hist2d(all_times, all_wf, bins=300, **plot_map)
+        cbar = plt.colorbar(axes[i].collections[0], ax=axes[i])
+        axes[i].set_xlabel('Times')
+        axes[i].set_ylabel('WF')
+        axes[i].set_title(f'{chamber}')
+
+    plt.tight_layout()
+    
+    suffix = "ADC_2Dhist" if use_adc else "2Dhist"
+    plt.savefig(f'check_plot/{run}/Waveforms_ChSc_{suffix}.png')
 
 def create_efficiency_plot(output_df, list_of_cuts, run_index, save_path, name):
 
@@ -206,6 +246,7 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
             for key in info_channels:
                 yaml_output[name][key] = odb_dict["Equipment"]["FeLibFrontend"]["Settings"][f"Channel{channel_id}"][key]
         
+        print("ODB complete")
         total_events = sum(1 for _ in mfile if not _.header.is_midas_internal_event() and _.header.event_id == 1)
         mfile.jump_to_start()
 
@@ -291,26 +332,9 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
     
         output_df = pd.DataFrame(data_for_df)
         output_df.columns = pd.MultiIndex.from_tuples(output_df.columns)
-    else:
-
-        output_df = pd.read_pickle(f'{op}pickles/run{run_index}_wf.pkl')
-        yaml_output = {}
-        with open(f'{op}yamls/run{run_index}_info.yaml', 'r') as yaml_file:
-            yaml_output = yaml.safe_load(yaml_file)
-        satur = {}
-        for channel_id in json_data["Channels"]:
-            name = json_data["Channels"][channel_id]["name"]
-            satur[name] = output_df[(name, 'is_satur')].sum()
-        print(f"Loaded DataFrame for run {run_index} with {output_df.shape[0]} events.")
-        print(f"Saturated events for run {run_index}: {satur}")
-        paths = f'check_plot/{run_index}'
-        os.makedirs(f'check_plot/{run_index}', exist_ok=True)
-    conversion = 0.18
-    output_df['Generic_Info', 'wc_x'] = conversion * (output_df[('Chamber_x_1', 't0')] - output_df[('Chamber_x_2', 't0')])
-    output_df['Generic_Info', 'wc_y'] = conversion * (output_df[('Chamber_y_1', 't0')] - output_df[('Chamber_y_2', 't0')])
-
-
-    if not fc:
+        conversion = 0.18
+        output_df['Generic_Info', 'wc_x'] = conversion * (output_df[('Chamber_x_1', 't0')] - output_df[('Chamber_x_2', 't0')])
+        output_df['Generic_Info', 'wc_y'] = conversion * (output_df[('Chamber_y_1', 't0')] - output_df[('Chamber_y_2', 't0')])
         os.makedirs(f'{op}pickles', exist_ok=True)
         # Write yaml_output to file
         yaml_filename = f'{op}yamls/run{run_index}_info.yaml'
@@ -321,9 +345,21 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
         add = '_wf' if save_waveforms else ''
         output_df.to_pickle(f'{op}pickles/run{run_index}{add}.pkl')
         print(f"DataFrame for run {run_index} saved with {output_df.shape[0]} events.")
-        print(f"Saturated events for run {run_index}: {satur}")
-        print("Creating Efficiency Plots")
+        #print(f"Saturated events for run {run_index}: {satur}")
+    else:
+        print(f'Reading existing DataFrame {op}pickles/run{run_index}_wf.pkl')
+        output_df = pd.read_pickle(f'{op}pickles/run{run_index}_wf.pkl')
+        with open(f'{op}yamls/run{run_index}_info.yaml', 'r') as yaml_file:
+            yaml_output = yaml.safe_load(yaml_file)
+        satur = {}
+        print(f"Loaded DataFrame for run {run_index} with {output_df.shape[0]} events.")
+        paths = f'check_plot/{run_index}'
+        os.makedirs(f'check_plot/{run_index}', exist_ok=True)
+
+
+    if not fc:
         if om:
+            print("Creating Efficiency Plots")
             list_of_cuts_plastic = {
                 'Trigger': None,
                 'Plastico': (output_df[('Plastico', 'amplitude')] > 0.1),
@@ -415,6 +451,16 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
                 axes[idx].set_title(f"{detector} Amplitude Distribution - Run {run_index}")
                 axes[idx].set_xlabel("Amplitude")
                 axes[idx].set_ylabel("Counts")
+                mean_amplitude = output_df[(detector, 'amplitude')].mean()
+                std_amplitude = output_df[(detector, 'amplitude')].std()
+                axes[idx].axvline(x=mean_amplitude, color='red', linestyle='--', alpha=0.7, label=f'Mean: {mean_amplitude:.3f}')
+                axes[idx].axvspan(mean_amplitude - std_amplitude, mean_amplitude + std_amplitude, 
+                                 alpha=0.2, color='red', label=f'±1σ: {std_amplitude:.3f}')
+                axes[idx].text(0.95, 0.95, f'Events: {len(output_df)}', 
+                               transform=axes[idx].transAxes, fontsize=10, 
+                               verticalalignment='top', horizontalalignment='right',
+                               bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+                axes[idx].legend(loc='best')
             plt.tight_layout()
             plt.savefig(f'{paths}/cherenkov_scintillator_Amplitude.png', dpi = 300)
             print(f'Saved {paths}/cherenkov_scintillator_Amplitude.png')
@@ -424,9 +470,19 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
             for idx, detector in enumerate(['Cherenkov', 'Scintillator']):
                 axes[idx].hist(output_df_filtered[(detector, 'amplitude')], bins=100)
                 axes[idx].set_yscale('log')
-                axes[idx].set_title(f"{detector} Amplitude Distribution - Run {run_index}")
+                axes[idx].set_title(f"{detector} Amplitude Distribution - Chambers - Run {run_index}")
                 axes[idx].set_xlabel("Amplitude")
                 axes[idx].set_ylabel("Counts")
+                mean_amplitude = output_df_filtered[(detector, 'amplitude')].mean()
+                std_amplitude = output_df_filtered[(detector, 'amplitude')].std()
+                axes[idx].axvline(x=mean_amplitude, color='red', linestyle='--', alpha=0.7, label=f'Mean: {mean_amplitude:.3f}')
+                axes[idx].axvspan(mean_amplitude - std_amplitude, mean_amplitude + std_amplitude, 
+                                 alpha=0.2, color='red', label=f'±1σ: {std_amplitude:.3f}')
+                axes[idx].text(0.95, 0.95, f'Events: {len(output_df_filtered)}', 
+                               transform=axes[idx].transAxes, fontsize=10, 
+                               verticalalignment='top', horizontalalignment='right',
+                               bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+                axes[idx].legend(loc='best')
             plt.tight_layout()
             plt.savefig(f'{paths}/cherenkov_scintillator_Amplitude_chambers.png', dpi = 300)
             print(f'Saved {paths}/cherenkov_scintillator_Amplitude_chambers.png')

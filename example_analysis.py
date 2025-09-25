@@ -4,19 +4,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LogNorm
 import yaml
-from functions import x_times, create_2d_histogram
+from functions import x_times, create_2d_histogram, plot_waveforms_2d
 import random
 import argparse
 # %%
 parser = argparse.ArgumentParser(description='Process run data for analysis')
 parser.add_argument('--run', type=str, help='Run number to process')
+parser.add_argument('--path', type=str, help='Path to the data files', default='./')
+
 args = parser.parse_args()
 
 run = args.run
 # %%
 
-df = pd.read_pickle(f'pickles/run{run}_wf.pkl')
-yaml = yaml.safe_load(open(f'yamls/run{run}_info.yaml'))
+df = pd.read_pickle(f'{args.path}pickles/run{run}_wf.pkl')
+yaml = yaml.safe_load(open(f'{args.path}yamls/run{run}_info.yaml'))
 times = x_times(yaml['Pretrigger_Time'], yaml['WF_Length'], yaml['WF_Length_Time'])
 # %%
 
@@ -28,9 +30,22 @@ valid_chambers = (
             )
 df_chambers = df[valid_chambers]
 # %%
-print('Le variabili sono:')
-for col in df_chambers.columns.levels[0]:
-    print(col, list(df_chambers[col].keys()))
+
+#   print('Le variabili sono:')
+#   for col in df_chambers.columns.levels[0]:
+#       print(col, list(df_chambers[col].keys()))
+'''
+Le variabili sono:
+Chamber_x_1 ['pedestal', 'is_satur', 'amplitude', 't0', 'tmax', 'WF']
+Chamber_x_2 ['pedestal', 'is_satur', 'amplitude', 't0', 'tmax', 'WF']
+Chamber_y_1 ['pedestal', 'is_satur', 'amplitude', 't0', 'tmax', 'WF']
+Chamber_y_2 ['pedestal', 'is_satur', 'amplitude', 't0', 'tmax', 'WF']
+Cherenkov ['pedestal', 'is_satur', 'amplitude', 't0', 'tmax', 'amplitude_mediata', 'charge', 'WF']
+Generic_Info ['Run_Number', 'Event_Number', 'wc_x', 'wc_y']
+PMT ['pedestal', 'is_satur', 'amplitude', 't0', 'tmax', 'WF']
+Plastico ['pedestal', 'is_satur', 'amplitude', 't0', 'tmax', 'WF']
+Scintillator ['pedestal', 'is_satur', 'amplitude', 't0', 'tmax', 'amplitude_mediata', 'charge', 'WF']
+'''
 # %%
 '''
 fig, axes = plt.subplots(1, 1, figsize=(10, 8))
@@ -58,43 +73,6 @@ else:
 # %%
 
 '''
-
-
-fig, axes = plt.subplots(1, 2, figsize=(24, 10))
-
-fig.suptitle(f'Run {run} - Waveforms (Volt)', fontsize=16)
-chambers = ['Cherenkov', 'Scintillator']
-plot_map = {'cmin': 1e-3, 'cmap': 'plasma'}
-for i, chamber in enumerate(chambers):
-    wf = df_chambers[chamber]['WF']
-    all_times = np.concatenate([np.arange(1, len(wf[j]) + 1) for j in wf.keys()])
-    all_times = times[all_times - 1]  # Convert to actual time values
-    all_wf = np.concatenate([wf[j] for j in wf.keys()])
-    axes[i].hist2d(all_times, all_wf, bins=300, **plot_map)
-    cbar = plt.colorbar(axes[i].collections[0], ax=axes[i])
-    axes[i].set_xlabel('Times')
-    axes[i].set_ylabel('WF')
-    axes[i].set_title(f'{chamber}')
-
-plt.tight_layout()
-plt.savefig(f'check_plot/{run}/Waveforms_ChSc_2Dhist.png')
-
-fig, axes = plt.subplots(1, 2, figsize=(24, 10))
-fig.suptitle(f'Run {run} - Waveforms (ADC Units)', fontsize=16)
-
-chambers = ['Cherenkov', 'Scintillator']
-plot_map = {'cmin': 1e-3, 'cmap': 'plasma'}
-for i, chamber in enumerate(chambers):
-    wf = df_chambers[chamber]['WF']/yaml[chamber]['adctovolts'] + df_chambers[chamber]['pedestal']
-    all_times = np.concatenate([np.arange(1, len(wf[j]) + 1) for j in wf.keys()])
-    all_times = times[all_times - 1]  # Convert to actual time values
-    all_wf = np.concatenate([wf[j] for j in wf.keys()])
-    axes[i].hist2d(all_times, all_wf, bins=300, **plot_map)
-    cbar = plt.colorbar(axes[i].collections[0], ax=axes[i])
-    axes[i].set_xlabel('Times')
-    axes[i].set_ylabel('WF')
-    axes[i].set_title(f'{chamber}')
-
-plt.tight_layout()
-plt.savefig(f'check_plot/{run}/Waveforms_ChSc_ADC_2Dhist.png')
-# %%
+# Usage
+plot_waveforms_2d(df_chambers, times, yaml, run, use_adc=False)  # Volts
+plot_waveforms_2d(df_chambers, times, yaml, run, use_adc=True)   # ADC Units

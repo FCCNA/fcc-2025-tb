@@ -44,7 +44,10 @@ for arg in args.runs:
     else:
         run_indices.append(int(arg))
 
-
+if args.pathmib:
+    ole = '/eos/experiment/drdcalo/maxicc/TBCERN_24Sept2025_vx2730/'
+else:
+    ole = './'
 # %%
 for run_index in run_indices:
     functions.read_waveform(run_index = run_index, 
@@ -56,5 +59,5 @@ for run_index in run_indices:
                             write = args.write,
                             pathmib = args.pathmib)
     if args.not_save_wf:
-        os.system(f'python3 example_analysis.py --run {run_index}')
+        os.system(f'python3 example_analysis.py --run {run_index} --path {ole}')
 
