@@ -4,8 +4,8 @@ import midas.file_reader
 from datetime import datetime
 import os
 import matplotlib.pyplot as plt
-plt.rc('text', usetex=True)
-plt.rc('font', family='palatino')
+#plt.rc('text', usetex=True)
+#plt.rc('font', family='palatino')
 import pandas as pd
 from matplotlib.patches import Rectangle
 from matplotlib.colors import LogNorm
