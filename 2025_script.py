@@ -16,14 +16,14 @@ parser.add_argument('--path', type=str,
                     default='/eos/experiment/drdcalo/maxicc/TBCERN_24Sept2025_vx2730/')
 parser.add_argument('--plot_check', action='store_true', 
                     help='Enable plotting checks')
-parser.add_argument('--save_wf', action='store_true', 
+parser.add_argument('--save_wf', action='store_false', default=True, 
                     help='Enable saving waveforms')
-parser.add_argument('--json', default = 'config.json', type = str,
+parser.add_argument('--json', default = 'config_fase1.json', type = str,
                     help='Select JSON for configuration')
 parser.add_argument('--fast_check', action='store_true',
                     help='Enable fast check mode')
-parser.add_argument('--ssh', action='store_true',
-                    help='Copy to INFN Page')
+parser.add_argument('--avoid', action='store_true',
+                    help='Avoid to read the file')
 args = parser.parse_args()
 
 # Load JSON file
@@ -50,6 +50,7 @@ for run_index in run_indices:
                             om = plot_check,
                             fc = fast_check,
                             json_data = json_data, 
-                            save_waveforms = sw)
-
+                            save_waveforms = sw,
+                            avoid = args.avoid)
+    os.system(f'python3 example_analysis.py --run {run_index}')
 

@@ -4,9 +4,6 @@
         "0": {
             "name": "PMT"
         },
-        "2": {
-            "name": "Plastico_MIB_Analog"
-        },
         "4": {
             "name": "Chamber_x_1"
         },
@@ -26,7 +23,7 @@
             "name": "Cherenkov"
         },
         "10": {
-            "name": "Plastico_Big"
+            "name": "Plastico"
         }
     }
 }
