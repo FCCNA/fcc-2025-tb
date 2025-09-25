@@ -62,6 +62,7 @@ else:
 
 fig, axes = plt.subplots(1, 2, figsize=(24, 10))
 
+fig.suptitle(f'Run {run} - Waveforms (Volt)', fontsize=16)
 chambers = ['Cherenkov', 'Scintillator']
 plot_map = {'cmin': 1e-3, 'cmap': 'plasma'}
 for i, chamber in enumerate(chambers):
@@ -79,6 +80,7 @@ plt.tight_layout()
 plt.savefig(f'check_plot/{run}/Waveforms_ChSc_2Dhist.png')
 
 fig, axes = plt.subplots(1, 2, figsize=(24, 10))
+fig.suptitle(f'Run {run} - Waveforms (ADC Units)', fontsize=16)
 
 chambers = ['Cherenkov', 'Scintillator']
 plot_map = {'cmin': 1e-3, 'cmap': 'plasma'}
