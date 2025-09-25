@@ -76,7 +76,6 @@ for i, chamber in enumerate(chambers):
     axes[i].set_title(f'{chamber}')
 
 plt.tight_layout()
-plt.show()
 plt.savefig(f'check_plot/{run}/Waveforms_ChSc_2Dhist.png')
 
 fig, axes = plt.subplots(1, 2, figsize=(24, 10))
@@ -95,6 +94,5 @@ for i, chamber in enumerate(chambers):
     axes[i].set_title(f'{chamber}')
 
 plt.tight_layout()
-plt.show()
 plt.savefig(f'check_plot/{run}/Waveforms_ChSc_ADC_2Dhist.png')
 # %%
