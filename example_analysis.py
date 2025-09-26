@@ -9,7 +9,7 @@ import random
 import argparse
 # %%
 parser = argparse.ArgumentParser(description='Process run data for analysis')
-parser.add_argument('--run', type=str, help='Run number to process')
+parser.add_argument('--run', type=int, help='Run number to process')
 parser.add_argument('--path', type=str, help='Path to the data files', default='./')
 
 args = parser.parse_args()
@@ -55,6 +55,6 @@ plt.show()
 '''
 cuts = ['chambers', 'plastico', 'crystal']
 for cut in cuts:
-    df_temp = apply_data_cuts(df, cut)
+    df_temp = apply_data_cuts(df, cut, run)
     for adc in [True, False]:
         plot_waveforms_2d(df_temp, times, yaml_data, run, use_adc=adc, cut=cut)

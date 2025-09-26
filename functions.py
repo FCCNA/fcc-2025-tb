@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.patches import Rectangle
 from matplotlib.colors import LogNorm
+import variables as var
 import yaml
 from cycler import cycler  # Permette di impostare cicli di colori
 
@@ -98,9 +99,10 @@ def create_amplitude_histo(output_df, run_index, paths, logbook_entry, suffix=""
     
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     fig.suptitle(f"Cherenkov and Scintillator Amplitudes{title_suffix} - Run {run_index}")
-    
+    bools_range = (run_index >= 869 and run_index <= 951) or (run_index >= 993) 
+    ranges = (0, 0.15) if bools_range else (0, 1.2)
     for idx, detector in enumerate(['Cherenkov', 'Scintillator']):
-        axes[idx].hist(output_df[f'{detector}_amplitude'], bins=200)
+        axes[idx].hist(output_df[f'{detector}_amplitude'], bins=200, range = ranges)
         axes[idx].set_yscale('log')
         axes[idx].set_title(f"{detector} Amplitude Distribution{title_suffix} - Run {run_index} - {logbook_entry['particle']} - {logbook_entry['crystal']} - {logbook_entry['angle']}")
         axes[idx].set_xlabel("Amplitude")
@@ -215,7 +217,8 @@ def find_t0(wf, threshold, times):
     else:
         return 0
     
-def apply_data_cuts(output_df, cut):
+def apply_data_cuts(output_df, cut, run_number):
+    plastico_cut = 0.01 if (run_number >= 879 and run_number <= 896) else 0.1
     if cut == 'chambers':
         filter = (
                 (output_df['Chamber_x_1_amplitude'] > 0.5) &
@@ -230,7 +233,7 @@ def apply_data_cuts(output_df, cut):
             (output_df['Chamber_x_2_amplitude'] > 0.5) &
             (output_df['Chamber_y_1_amplitude'] > 0.5) & 
             (output_df['Chamber_y_2_amplitude'] > 0.5) &
-            (output_df['Plastico_amplitude'] > 0.1)
+            (output_df['Plastico_amplitude'] > plastico_cut)
         )
     elif cut == 'crystal':
         filter = (
@@ -238,7 +241,7 @@ def apply_data_cuts(output_df, cut):
             (output_df['Chamber_x_2_amplitude'] > 0.5) &
             (output_df['Chamber_y_1_amplitude'] > 0.5) & 
             (output_df['Chamber_y_2_amplitude'] > 0.5) &
-            (output_df['Plastico_amplitude'] > 0.1) &
+            (output_df['Plastico_amplitude'] > plastico_cut) &
             (output_df['wc_x'].between(-5, 5)) &
             (output_df['wc_y'].between(7, 12))
         )
@@ -252,7 +255,7 @@ def apply_data_cuts(output_df, cut):
 def x_times(pretrigger_time, length_time, length):
     return np.arange(0-pretrigger_time, length_time - pretrigger_time, length_time / length)
     
-def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pathmib):
+def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pathmib):
     run = f'run{run_index:05d}'
     try:
         mfile = midas.file_reader.MidasFile(path + run + '.mid.gz', use_numpy=True)
@@ -378,6 +381,7 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
                 piedistallo = bank.data[:pretrigger_sample-10].mean()
                 event_data[f'{name}_pedestal'] = piedistallo
                 wf = convert(bank.data, yaml_output[name]["adctovolts"], piedistallo)
+                event_data[f'{name}_WF'] = wf
 
                 if is_saturato(bank.data, wf, bit = bit):
                     satur[name] += 1
@@ -400,8 +404,6 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
                     event_data[f'{name}_charge'] = np.sum(wf)
 
 
-                if save_waveforms:
-                    event_data[f'{name}_WF'] = wf
             
             data_for_df.append(event_data)
 
@@ -419,10 +421,8 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
         with open(yaml_filename, 'w') as yaml_file:
             yaml.dump(yaml_output, yaml_file)
         print(f"YAML info for run {run_index} saved to {yaml_filename}")
-        if save_waveforms:
-            add = '_wf' if save_waveforms else ''
-            output_df.to_parquet(f'{op}parquet/run{run_index}{add}.parq')
-            print(f"DataFrame for run {run_index} saved with {len(output_df)} events.")
+        output_df.to_parquet(f'{op}parquet/run{run_index}.parq')
+        print(f"DataFrame for run {run_index} saved with {len(output_df)} events.")
         '''
         output_df_no_wf = output_df.copy()
 
@@ -440,7 +440,10 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
         #print(f"Saturated events for run {run_index}: {satur}")
     else:
         print(f'Reading existing DataFrame {op}parquet/run{run_index}_wf.parq')
-        output_df = pd.read_parquet(f'{op}parquet/run{run_index}_wf.parq')
+
+        col_list = var.col_list_no_wf
+        output_df = pd.read_parquet(f'{op}parquet/run{run_index}_wf.parq', columns = col_list, engine = 'pyarrow')
+        
         with open(f'{op}yamls/run{run_index}_info.yaml', 'r') as yaml_file:
             yaml_output = yaml.safe_load(yaml_file)
         satur = {}
@@ -486,7 +489,7 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
             
             output_df_filtered = {}
             for cut in cuts:
-                output_df_filtered[cut] = apply_data_cuts(output_df, cut)
+                output_df_filtered[cut] = apply_data_cuts(output_df, cut, run_index)
 
             for idx, cut in enumerate(cuts):
                 create_2d_histogram(axes[idx], output_df_filtered[cut]['wc_x'], output_df_filtered[cut]['wc_y'], f"{cuts[idx]} - {logbook_entry['particle']} - {logbook_entry['crystal']} - {logbook_entry['angle']}", run_index)
@@ -501,8 +504,8 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
                                         f"{cut} - {logbook_entry['particle']} - {logbook_entry['crystal']} - {logbook_entry['angle']}", 
                                         f'{paths}/chambers_beamposition_grid_{cut}.png')
 
-        
-        if 'Cherenkov' in output_df.columns and 'Scintillator' in output_df.columns:
+
+        if 'Cherenkov_amplitude' in output_df.columns and 'Scintillator_amplitude' in output_df.columns:
             fig, axes = plt.subplots(1, 2, figsize=(24, 10))
             fig.suptitle(f"Cherenkov and Scintillator Waveforms - Run {run_index}")
 
@@ -526,6 +529,7 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
             # plt.savefig(f'{paths}/cherenkov_scintillator.png', dpi=300)
             # print(f'Saved {paths}/cherenkov_scintillator.png')
             # plt.close()
+            cuts = ['chambers', 'plastico', 'crystal']
             for cut in cuts:
                 create_amplitude_histo(output_df_filtered[cut], run_index, paths, logbook_entry, suffix=cut)
 
@@ -544,7 +548,7 @@ def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pat
                 fig.suptitle(f"Other Channels Amplitudes - {logbook_entry['particle']} - {logbook_entry['crystal']} - {logbook_entry['angle']}")
 
                 for idx, name in enumerate(other_channels):
-                    if (name, 'amplitude') in output_df.columns:
+                    if (f'{name}_amplitude') in output_df.columns:
                         axes[idx].hist(output_df[f'{name}_amplitude'], bins=100, alpha=0.7)
                         axes[idx].set_title(f"{name} Amplitude Distribution")
                         axes[idx].set_xlabel("Amplitude")

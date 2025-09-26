@@ -16,8 +16,8 @@ parser.add_argument('--path', type=str,
                     default='/eos/experiment/drdcalo/maxicc/TBCERN_24Sept2025_vx2730/')
 parser.add_argument('--plot_check', action='store_true', 
                     help='Enable plotting checks')
-parser.add_argument('--not_save_wf', action='store_false', default=True, 
-                    help='Enable saving waveforms')
+parser.add_argument('--read_wf', action='store_true', 
+                    help='Enable reading waveforms')
 parser.add_argument('--json', default = 'config_fase1.json', type = str,
                     help='Select JSON for configuration')
 parser.add_argument('--fast_check', action='store_true',
@@ -35,7 +35,7 @@ with open(args.json, 'r') as f:
 path = args.path
 plot_check = (args.plot_check or args.fast_check)
 fast_check = (args.fast_check)
-sw = args.not_save_wf
+rw = args.read_wf
 run_indices = []
 for arg in args.runs:
     if ':' in arg:
@@ -55,9 +55,9 @@ for run_index in run_indices:
                             om = plot_check,
                             fc = fast_check,
                             json_data = json_data, 
-                            save_waveforms = sw,
+                            read_waveforms = rw,
                             write = args.write,
                             pathmib = args.pathmib)
-    if args.not_save_wf:
+    if args.read_wf:
         os.system(f'python3 example_analysis.py --run {run_index} --path {ole}')
 
