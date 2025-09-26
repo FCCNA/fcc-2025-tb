@@ -412,8 +412,8 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
         output_df = pd.DataFrame(data_for_df)
         #output_df.columns = pd.MultiIndex.from_tuples(output_df.columns)
         conversion = 0.18
-        output_df['wc_x'] = conversion * (output_df[('Chamber_x_1_t0')] - output_df[('Chamber_x_2_t0')])
-        output_df['wc_y'] = conversion * (output_df[('Chamber_y_1_t0')] - output_df[('Chamber_y_2_t0')])
+        output_df['wc_x'] = conversion * (output_df['Chamber_x_1_t0'] - output_df['Chamber_x_2_t0'])
+        output_df['wc_y'] = conversion * (output_df['Chamber_y_1_t0'] - output_df['Chamber_y_2_t0'])
         os.makedirs(f'{op}parquet', exist_ok=True)
         # Write yaml_output to file
         yaml_filename = f'{op}yamls/run{run_index}_info.yaml'
@@ -421,7 +421,7 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
         with open(yaml_filename, 'w') as yaml_file:
             yaml.dump(yaml_output, yaml_file)
         print(f"YAML info for run {run_index} saved to {yaml_filename}")
-        output_df.to_parquet(f'{op}parquet/run{run_index}.parq')
+        output_df.to_parquet(f'{op}parquet/run{run_index}_wf.parq')
         print(f"DataFrame for run {run_index} saved with {len(output_df)} events.")
         '''
         output_df_no_wf = output_df.copy()
