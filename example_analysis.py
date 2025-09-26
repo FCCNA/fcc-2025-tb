@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LogNorm
 import yaml
-from functions import x_times, create_2d_histogram, plot_waveforms_2d
+from functions import x_times, create_2d_histogram, plot_waveforms_2d, apply_data_cuts
 import random
 import argparse
 # %%
@@ -17,18 +17,16 @@ args = parser.parse_args()
 run = args.run
 # %%
 
-df = pd.read_pickle(f'{args.path}pickles/run{run}_wf.pkl')
-yaml = yaml.safe_load(open(f'{args.path}yamls/run{run}_info.yaml'))
-times = x_times(yaml['Pretrigger_Time'], yaml['WF_Length'], yaml['WF_Length_Time'])
-# %%
+col_list = ['Cherenkov_WF', 'Scintillator_WF', 
+            'Cherenkov_pedestal', 'Scintillator_pedestal', 
+            'Chamber_x_1_amplitude', 'Chamber_x_2_amplitude', 'Chamber_y_1_amplitude', 'Chamber_y_2_amplitude', 'Plastico_amplitude', 
+            'wc_x', 'wc_y']
+df = pd.read_parquet(f'{args.path}parquet/run{run}_wf.parq', columns=col_list, engine='pyarrow')
+yaml_data = yaml.safe_load(open(f'{args.path}yamls/run{run}_info.yaml'))
+times = x_times(yaml_data['Pretrigger_Time'], yaml_data['WF_Length'], yaml_data['WF_Length_Time'])
 
-valid_chambers = (
-                (df[('Chamber_x_1', 'amplitude')] > 0.5) & 
-                (df[('Chamber_x_2', 'amplitude')] > 0.5) &
-                (df[('Chamber_y_1', 'amplitude')] > 0.5) & 
-                (df[('Chamber_y_2', 'amplitude')] > 0.5)
-            )
-df_chambers = df[valid_chambers]
+ 
+
 # %%
 
 #   print('Le variabili sono:')
@@ -53,26 +51,10 @@ create_2d_histogram(axes, df_chambers['Generic_Info']['wc_x'], df_chambers['Gene
 
 plt.tight_layout()
 plt.show()
-# %%
-# Get the first waveform with amplitude > 0.7
-mask = df_chambers['WF_Plastic', 'amplitude'] > 0.7
-first_high_amplitude_idx = mask.idxmax() if mask.any() else None
-
-if first_high_amplitude_idx is not None:
-    waveform_data = df_chambers['WF_Plastic', 'WF'].loc[first_high_amplitude_idx]
-    
-    plt.figure(figsize=(10, 6))
-    plt.plot(times, waveform_data, 'b-', color='teal', linewidth=1)
-    plt.xlabel('Time (ns)')
-    plt.ylabel('Amplitude')
-    plt.title(f'Event {first_high_amplitude_idx} - WF Plastic')
-    plt.grid(True, alpha=0.3)
-    plt.show()
-else:
-    print("No waveform found with amplitude > 0.7")
-# %%
 
 '''
-# Usage
-plot_waveforms_2d(df_chambers, times, yaml, run, use_adc=False)  # Volts
-plot_waveforms_2d(df_chambers, times, yaml, run, use_adc=True)   # ADC Units
+cuts = ['chambers', 'plastico', 'crystal']
+for cut in cuts:
+    df_temp = apply_data_cuts(df, cut)
+    for adc in [True, False]:
+        plot_waveforms_2d(df_temp, times, yaml_data, run, use_adc=adc, cut=cut)
