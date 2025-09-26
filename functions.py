@@ -254,7 +254,11 @@ def x_times(pretrigger_time, length_time, length):
     
 def read_waveform(run_index, path, om, fc, json_data, save_waveforms, write, pathmib):
     run = f'run{run_index:05d}'
-    mfile = midas.file_reader.MidasFile(path + run + '.mid.gz', use_numpy=True)
+    try:
+        mfile = midas.file_reader.MidasFile(path + run + '.mid.gz', use_numpy=True)
+    except FileNotFoundError:
+        print(f"File {path + run + '.mid.gz'} not found.")
+        return None, None, None
     paths = f'check_plot/{run_index}'
     os.makedirs(f'check_plot/{run_index}', exist_ok=True)
     with open('logbook.yaml', 'r') as file:
