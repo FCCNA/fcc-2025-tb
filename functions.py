@@ -25,10 +25,38 @@ def media_mobile(arr, window_size):
     kernel = np.ones(window_size) / window_size
     return np.convolve(arr, kernel, mode='same')
 
-
 def convert(wf, adtovolt = 1, piedistallo = 0):
     a = (wf - piedistallo) * adtovolt
     return a
+
+def remove_bkg(df, nsigma = 5):
+    for i in ['Scintillator', 'Cherenkov']:
+        df = df[df[f'{i}_amplitude'] > nsigma * df[f'{i}_pedestal_std']]
+    return df
+
+def custom_plot_layout(title="", xlabel="", ylabel="", figsize=(16, 9), isWaveform = False, crystal = None, beam = None, angle = None, channels = None):
+    
+    string_top_left = f"$\it FCC\,Napoli - {crystal} -$" + f" {beam}" + f" - TB2025"
+    string_top_right = f"{angle}°"
+    
+    if not isWaveform:
+        plt.figure(figsize=figsize)
+        plt.text(0.01, 1.01, string_top_left, transform=plt.gca().transAxes, fontsize=25,  fontstyle = 'italic', fontfamily = 'serif', verticalalignment='bottom', horizontalalignment='left')
+        if angle != None:
+            plt.text(1, 1.01, string_top_right, transform=plt.gca().transAxes, fontsize=25,  fontstyle = 'italic', fontfamily = 'serif', verticalalignment='bottom', horizontalalignment='right')
+        plt.title(title)
+    else:
+        fig, ax = plt.subplots(len(channels), 1, sharex = True, figsize = (21, 9*len(channels)))
+        for i, channel in enumerate(channels):
+            ax[i].set_ylabel(ylabel, fontsize = 20)
+            ax[i].grid(True)
+            ax[i].text(0.01, 1.01, string_top_left,  transform=ax[i].transAxes, fontsize=25,  fontstyle = 'italic', verticalalignment='bottom', horizontalalignment='left')
+            if angle != None:
+                ax[i].text(1, 1.01, string_top_right + f' - Channel {channel}',  transform=ax[i].transAxes, fontsize=25,  fontstyle = 'italic', verticalalignment='bottom', horizontalalignment='right')
+        plt.subplots_adjust(hspace=0.05)
+        plt.title(title)    
+    plt.xlabel(xlabel, fontsize = 25)
+    plt.ylabel(ylabel, fontsize = 25)
 
 def create_subplot_layout(n_channels):
     if n_channels == 1:
@@ -57,7 +85,7 @@ def is_saturato(wf, wf_volt, bit = 14):
     threshold = 16381
     return (np.max(wf) >= threshold or np.min(wf) <= 2) or (np.max(np.abs(wf_volt)) >= 1.0)
 
-def create_beam_position_plot(delta_x, delta_y, title, filename, figsize=(10, 8), bins=250, range_vals=(-40, 40)):
+def create_beam_position_plot(delta_x, delta_y, title, filename, verbose = False, figsize=(10, 8), bins=250, range_vals=(-40, 40)):
 
     fig, axes = plt.subplots(2, 2, figsize=figsize, 
                             gridspec_kw={'width_ratios': [4, 1], 'height_ratios': [4, 1],
@@ -89,7 +117,8 @@ def create_beam_position_plot(delta_x, delta_y, title, filename, figsize=(10, 8)
     plt.setp(ax_main.get_xticklabels(), visible=False)
     plt.setp(ax_y.get_yticklabels(), visible=False)
     plt.savefig(filename, dpi=300)
-    print(f'Saved {filename}')
+    if verbose:
+        print(f'Saved {filename}')
     plt.close()
 
 def create_amplitude_histo(output_df, run_index, paths, logbook_entry, suffix=""):
@@ -254,7 +283,7 @@ def apply_data_cuts(output_df, cut, run_number):
 
 def x_times(pretrigger_time, length_time, length):
     return np.arange(0-pretrigger_time, length_time - pretrigger_time, length_time / length)
-    
+   
 def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pathmib):
     run = f'run{run_index:05d}'
     try:
@@ -379,9 +408,11 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
                     continue
 
                 piedistallo = bank.data[:pretrigger_sample-10].mean()
-                event_data[f'{name}_pedestal'] = piedistallo
+                event_data[f'{name}_pedestal'] = piedistallo 
                 wf = convert(bank.data, yaml_output[name]["adctovolts"], piedistallo)
                 event_data[f'{name}_WF'] = wf
+                std_V = wf[:pretrigger_sample-10].std()
+                event_data[f'{name}_pedestal_std'] = std_V
 
                 if is_saturato(bank.data, wf, bit = bit):
                     satur[name] += 1
@@ -395,6 +426,7 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
                 t0 = find_t0(wf, ampl*0.1, times)
                 event_data[f'{name}_t0'] = t0
                 event_data[f'{name}_tmax'] = times[np.argmax(np.abs(wf))]
+                event_data[f'{name}_goodwf'] = (ampl > 3 * std_V)
                 
 
                 if name in ["Scintillator", "Cherenkov"]:
@@ -422,7 +454,7 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
             yaml.dump(yaml_output, yaml_file)
         print(f"YAML info for run {run_index} saved to {yaml_filename}")
         output_df.to_parquet(f'{op}parquet/run{run_index}_wf.parq')
-        print(f"DataFrame for run {run_index} saved with {len(output_df)} events.")
+        print(f"DataFrame for run {run_index} saved with {len(output_df)} events on {op}parquet/run{run_index}_wf.parq.")
         '''
         output_df_no_wf = output_df.copy()
 
@@ -502,7 +534,7 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
             for cut in cuts:
                 create_beam_position_plot(output_df_filtered[cut]['wc_x'], output_df_filtered[cut]['wc_y'], 
                                         f"{cut} - {logbook_entry['particle']} - {logbook_entry['crystal']} - {logbook_entry['angle']}", 
-                                        f'{paths}/chambers_beamposition_grid_{cut}.png')
+                                        f'{paths}/chambers_beamposition_grid_{cut}.png', verbose=True)
 
 
         if 'Cherenkov_amplitude' in output_df.columns and 'Scintillator_amplitude' in output_df.columns:
