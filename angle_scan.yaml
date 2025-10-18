@@ -1,0 +1,437 @@
+BSO_first:
+  mu:
+    18db:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 806
+        10: 807
+        20: 808
+        50: 809
+        90: 810
+        100: 811
+        110: 812
+        120: 813
+        130: 814
+        140: 815
+        160: 816
+        170: 817
+        180: 818
+    28db:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 839
+        10: 840
+        20: 841
+        50: 842
+        90: 843
+        100: 844
+        110: 845
+        120: 846
+        130: 847
+        140: 848
+        160: 849
+        170: 850
+        180: 851
+  e:
+    18db:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 819  # Low beam rate, Scintillation saturated
+        10: 820  # Low beam rate
+        20: 821
+        50: 822
+        90: 823
+        100: 824
+        110: 825
+        120: 826
+        130: 827
+        140: 828
+        160: 829
+        170: 830
+        180: 831  # Scintillation and Cherenkov saturated
+    preshower:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 852
+        10: 853
+        20: 854
+        50: 855
+        90: 856
+        100: 857
+        110: 858
+        120: 859
+        130: 860
+        140: 861
+        160: 862
+        170: [867, 863]
+        180: 868
+
+BSO_second:
+  mu:
+    28db:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0:   [897, 910]
+        10:  [898, 911]
+        20:  [899, 912]
+        50:  [900, 913]
+        90:  [901, 914]
+        100: [902, 915]
+        110: [903, 916]
+        120: [904, 917]
+        130: [905, 918]
+        140: [906, 919]
+        160: [907, 920]
+        170: [908, 922]
+        180: [909, 923]
+    18db:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+      0: [924, 939]
+      10: [925, 940]
+      20: [926, 941]
+      50: [927, 942]
+      90: [928, 943]
+      100: [930, 944]
+      110: [931, 945]
+      120: [932, 946]
+      130: [933, 947]
+      140: [934, 948]
+      160: [935, 949]
+      170: [936, 950]
+      180: [937, 951]
+  e:
+    18db:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 952
+        10: 953
+        20: 954
+        50: 955
+        90: 956
+        100: 957
+        110: 958
+        120: 959
+        130: 960
+        140: 961
+        160: 962
+        170: 963
+        180: 964
+    preshower:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 967
+        10: 968
+        20: 969
+        50: 970
+        90: 971
+        100: 972
+        110: 973
+        120: 974
+        130: 975
+        140: 976
+        160: 977
+        170: 978
+        180: 979
+
+BGO:
+  e:
+    preshower:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        -3: 980
+        7: 981
+        17: 982
+        47: 983
+        87: 984
+        97: 985
+        107: 986
+        117: 987
+        127: 988
+        137: 989
+        157: 990
+        167: 991
+        177: 992
+  mu:
+    28db:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: [993, 1000]
+        10: [994, 1001]
+        20: [995, 1002]
+        50: [996, 1003]
+        90: [997, 1004]
+        100: [998, 1005]
+        110: [999, 1006]
+        120: 1007
+        130: 1008
+        140: 1009
+        160: 1010
+        170: 1011
+        180: 1012
+    18db:
+      trigger: "plastico NA small" 
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 1013
+        10: 1014
+        20: 1015
+        50: 1016
+        90: 1017
+        100: 1018
+        110: 1019
+        120: 1020
+        130: 1021
+        140: 1022
+        160: 1023
+        170: 1024
+        180: 1025
+
+BSO_siccas:
+  e:
+    18db:
+      trigger: "plastico NA small"
+      info: "2.5 scint e 4 cherenkov - SICCAS 5 cm"
+      energy: 10 #GeV
+      angles:
+        0: 1183
+        10: 1184
+        20: 1186  # 1185 marked as NO BUONO
+        50: 1187
+        70: 1188
+        90: 1189
+        100: 1190
+        110: 1191
+        120: 1192
+        130: 1193
+        140: 1194
+        160: 1195
+        170: 1196
+        180: 1198  # 1197 marked as NO BUONO, cherenkov saturated
+  mu:
+    18db:
+      trigger: "plastico NA small"
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 1199
+        10: 1200
+        20: 1201
+        50: 1202
+        70: 1203
+        90: 1204
+        100: 1205
+        110: 1206
+        120: 1207
+        130: 1208
+        140: 1209
+        160: 1210
+        170: 1211
+        180: 1212
+    28db:  # 18 + 10 dB
+      trigger: "plastico NA small"
+      info: "(2.5 scint e 4 cherenkov) + 10 dB"
+      energy: 120 #GeV
+      angles:
+        0: 1214
+        10: 1215
+        20: 1216
+        50: 1217
+        70: 1218
+        90: 1219
+        100: 1220
+        110: 1221
+        120: 1222
+        130: 1223
+        140: 1224
+        160: 1225
+        170: 1226
+        180: 1227
+
+ISMA_5153:
+  mu:
+    18db:
+      trigger: "plastico NA small"
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 1228
+        10: 1229
+        20: 1230
+        50: 1231
+        70: 1233
+        90: 1234
+        100: 1235
+        110: 1236
+        120: 1237
+        130: 1238
+        140: 1239
+        160: 1240
+        170: 1241
+        180: 1242
+    28db:
+      trigger: "plastico NA small"
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 1243
+        10: 1244
+        20: 1245
+        50: 1246
+        70: 1247
+        90: 1248
+        100: 1249
+        110: 1250
+        120: 1251
+        130: 1252
+        140: 1253
+        160: 1254
+        170: 1255
+        180: 1256
+  e:
+    18db:
+      trigger: "plastico NA small"
+      info: "2.5 scint e 4 cherenkov"
+      energy: 10 #GeV
+      angles:
+        0: 1257
+        10: 1258
+        20: 1259
+        50: 1260
+        70: 1261
+        90: 1262
+        100: 1263
+        110: 1264
+        120: 1265
+        130: 1266
+        140: 1267
+        160: 1268
+        170: 1269
+        180: 1270  # cherenkov saturated
+
+ISMA_5149:
+  e:
+    18db:
+      trigger: "plastico NA small"
+      info: "2.5 scint e 4 cherenkov"
+      energy: 10 #GeV
+      angles:
+        0: 1271
+        10: 1272
+        20: 1273
+        50: 1274
+        70: 1275
+        90: 1276
+        100: 1277
+        110: 1278
+        120: 1279
+        130: 1280
+        140: 1281
+        160: 1282
+        170: 1283
+        180: 1285  # cherenkov saturated
+  mu:
+    18db:
+      trigger: "plastico NA small"
+      info: "2.5 scint e 4 cherenkov"
+      energy: 120 #GeV
+      angles:
+        0: 1287
+        10: 1288
+        20: 1289
+        50: 1290
+        70: 1291
+        90: 1292
+        100: 1293
+        110: 1294
+        120: 1295
+        130: 1296
+        140: 1297
+        160: 1298
+        170: 1299
+        180: 1300
+    28db:
+      trigger: "plastico NA small"
+      info: "(2.5 scint e 4 cherenkov) + 10 dB"
+      energy: 120 #GeV
+      angles:
+        0: 1318
+        10: 1319
+        20: 1320
+        50: 1321
+        70: 1322
+        90: 1323
+        100: 1324
+        110: 1325
+        120: 1326
+        130: 1327
+        140: 1328
+        160: 1329
+        170: 1330
+        180: 1331
+
+BSO_siccas_2:
+  mu:
+    18db:
+      trigger: "plastico NA small"
+      info: "scintillazione HV 42 V, gain (digitizer) for both channels 18 db"
+      energy: 120 #GeV
+      angles:
+        0: 1494  # 1495 marked as NO BUONO
+        10: 1496
+        20: 1497
+        50: 1498
+        70: 1499
+        90: 1500
+        100: 1501
+        110: 1502
+        120: 1503
+        130: 1504
+        140: 1505
+        160: 1506
+        170: 1507
+
+  e:
+    18db:
+      trigger: "plastico NA small"
+      info: "scintillazione HV 42 V, gain (digitizer) for both channels 18 db"
+      energy: 10 #GeV
+      angles:
+      0: 1510
+      10: 1511
+      20: 1512
+      50: 1513
+      70: 1514
+      90: 1515
+      100: 1516
+      110: 1517
+      120: 1518
+      130: 1519
+      140: 1520
+      160: 1521
+      170: 1522
+      180: 1523
+
+
+    
