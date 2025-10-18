@@ -411,7 +411,7 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
                 event_data[f'{name}_pedestal'] = piedistallo
                 wf = convert(bank.data, yaml_output[name]["adctovolts"], piedistallo)
                 event_data[f'{name}_WF'] = wf
-                std_V = wf[:pretrigger_sample-10].std()
+                std_V = wf[:pretrigger_sample-100].std()
                 event_data[f'{name}_pedestal_std'] = std_V
 
                 if is_saturato(bank.data, wf, bit = bit):
