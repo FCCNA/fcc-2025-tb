@@ -407,8 +407,8 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
                 if fc and name not in ch_list:
                     continue
 
-                piedistallo = bank.data[:pretrigger_sample-10].mean()
-                event_data[f'{name}_pedestal'] = piedistallo 
+                piedistallo = bank.data[:pretrigger_sample-100].mean()
+                event_data[f'{name}_pedestal'] = piedistallo
                 wf = convert(bank.data, yaml_output[name]["adctovolts"], piedistallo)
                 event_data[f'{name}_WF'] = wf
                 std_V = wf[:pretrigger_sample-10].std()
