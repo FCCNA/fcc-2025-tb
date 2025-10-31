@@ -35,5 +35,9 @@ plots_info = {
     "c_over_s": {
         "xlabel": "Cherenkov/Scintillator Yield Ratio",
         "title": "Cherenkov/Scintillator Yield Ratio Distribution"
+    },
+    "c_s_over_s": {
+        "xlabel": "Cherenkov(s)/Scintillator Yield Ratio",
+        "title": "Cherenkov(s)/Scintillator Yield Ratio Distribution"
     }
 }

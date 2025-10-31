@@ -2,6 +2,7 @@
 import json
 import argparse
 import functions
+import read_waveform
 import os
 # %%
 
@@ -50,14 +51,14 @@ else:
     ole = './'
 # %%
 for run_index in run_indices:
-    functions.read_waveform(run_index = run_index, 
-                            path = path, 
-                            om = plot_check,
-                            fc = fast_check,
-                            json_data = json_data, 
-                            read_waveforms = rw,
-                            write = args.write,
-                            pathmib = args.pathmib)
+    read_waveform.read_waveform(run_index = run_index, 
+                                path = path, 
+                                om = plot_check,
+                                fc = fast_check,
+                                json_data = json_data, 
+                                read_waveforms = rw,
+                                write = args.write,
+                                pathmib = args.pathmib)
     if args.read_wf:
         os.system(f'python3 example_analysis.py --run {run_index} --path {ole}')
 
