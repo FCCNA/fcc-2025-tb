@@ -27,6 +27,9 @@ parser.add_argument('--write', action='store_true',
                     help='Create the dataframe the file')
 parser.add_argument('--pathmib', action='store_true',
                     help='save files to lucchini path')
+parser.add_argument('--year', type=int, default=2025,
+                    help='Year of the data taking (2024 or 2025), default=2025')
+
 args = parser.parse_args()
 
 # Load JSON file
@@ -58,7 +61,8 @@ for run_index in run_indices:
                                 json_data = json_data, 
                                 read_waveforms = rw,
                                 write = args.write,
-                                pathmib = args.pathmib)
+                                pathmib = args.pathmib,
+                                year = args.year)
     if args.read_wf:
         os.system(f'python3 example_analysis.py --run {run_index} --path {ole}')
 

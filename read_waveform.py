@@ -10,8 +10,10 @@ from functions import x_times, convert, find_t0, media_mobile
 
 
 
-def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pathmib):
+def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pathmib, year = 2025):
     run = f'run{run_index:05d}'
+    if year == 2024:
+        path = '/eos/experiment/drdcalo/maxicc/TBCERN_Na_2024/'
     try:
         mfile = midas.file_reader.MidasFile(path + run + '.mid.gz', use_numpy=True)
     except FileNotFoundError:
@@ -32,6 +34,8 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
 
     if pathmib:
         op = '/eos/experiment/drdcalo/maxicc/TBCERN_24Sept2025_vx2730/eor/'
+        if year == 2024:
+            op = '/eos/experiment/drdcalo/maxicc/TBCERN_Na_2024/'
     else: 
         op = './'
     if write:
@@ -47,11 +51,22 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
             stop_date = datetime.strptime(odb_dict["Runinfo"]["Stop time"], '%a %b %d %H:%M:%S %Y')
             run_description = odb_dict["Runinfo"]["Run description"]
             #SARA = odb_dict['Equipment']['FeLibFrontend']['Status']['Digitizer']['adc_samplrate']
-            bit = 2**odb_dict['Equipment']['FeLibFrontend']['Status']['Digitizer']['adc_nbit']
-            length = int(odb_dict['Equipment']['FeLibFrontend']['Settings']['Digitizer']['recordlengths'], 16)
-            length_time = int(odb_dict['Equipment']['FeLibFrontend']['Settings']['Digitizer']['recordlengtht'], 16)
-            pretrigger_time = int(odb_dict['Equipment']['FeLibFrontend']['Settings']['Digitizer']['pretriggert'], 16)
-            pretrigger_sample = int(odb_dict['Equipment']['FeLibFrontend']['Settings']['Digitizer']['pretriggers'], 16)
+            if year == 2025:
+                bit = 2**odb_dict['Equipment']['FeLibFrontend']['Status']['Digitizer']['adc_nbit']
+                length = int(odb_dict['Equipment']['FeLibFrontend']['Settings']['Digitizer']['recordlengths'], 16)
+                length_time = int(odb_dict['Equipment']['FeLibFrontend']['Settings']['Digitizer']['recordlengtht'], 16)
+                pretrigger_time = int(odb_dict['Equipment']['FeLibFrontend']['Settings']['Digitizer']['pretriggert'], 16)
+                pretrigger_sample = int(odb_dict['Equipment']['FeLibFrontend']['Settings']['Digitizer']['pretriggers'], 16)
+
+            if year == 2024:
+                Channel_Enabled = odb_dict['Equipment']['Trigger']['Settings']['Channel Enable']
+                scale = odb_dict['Equipment']['Trigger']['Settings']['Channel Scale']
+                position = odb_dict['Equipment']['Trigger']['Settings']['Channel Position']
+                HPOS = odb_dict['Equipment']['Trigger']['Settings']['Horizontal Position']
+                SARA = odb_dict['Equipment']['Trigger']['Settings']['Sample Rate']
+                bit = 2**16
+
+
             print("We are looking at a file from run number %s" % run_number)
         except RuntimeError:
             # No ODB dump found (mlogger was probably configured to not dump
@@ -61,25 +76,33 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
         yaml_output['Run_Number'] = run_number
         yaml_output['Start_Date'] = start_date
         yaml_output['Stop_Date'] = stop_date
-        yaml_output['Json'] = json_data['Description']
         yaml_output['Run_Description'] = run_description
-        yaml_output['Pretrigger_Time'] = pretrigger_time
-        yaml_output['Pretrigger_Sample'] = pretrigger_sample
-        yaml_output['WF_Length'] = length
-        yaml_output['WF_Length_Time'] = length_time
-        times = x_times(pretrigger_time, length_time, length)
+        if year == 2025:
+            yaml_output['Json'] = json_data['Description']
+            yaml_output['Pretrigger_Time'] = pretrigger_time
+            yaml_output['Pretrigger_Sample'] = pretrigger_sample
+            yaml_output['WF_Length'] = length
+            yaml_output['WF_Length_Time'] = length_time
+            times = x_times(pretrigger_time, length_time, length)
+        if year == 2024:
+            yaml_output['Channel_Enabled'] = Channel_Enabled
+            yaml_output['Scale'] = scale
+            yaml_output['Position'] = position
+            yaml_output['Sample_Rate'] = SARA
+            yaml_output['HPOS'] = HPOS
 
         mfile.jump_to_start()
 
         print("Reading ODB")
         # Extract channel configuration from ODB
         info_channels = ["gainfactor", "adctovolts", "dcoffset"]
-        
-        for channel_id in json_data["Channels"]:
-            name = json_data["Channels"][channel_id]["name"]
-            yaml_output[name] = {}
-            for key in info_channels:
-                yaml_output[name][key] = odb_dict["Equipment"]["FeLibFrontend"]["Settings"][f"Channel{channel_id}"][key]
+
+        if year == 2025:
+            for channel_id in json_data["Channels"]:
+                name = json_data["Channels"][channel_id]["name"]
+                yaml_output[name] = {}
+                for key in info_channels:
+                    yaml_output[name][key] = odb_dict["Equipment"]["FeLibFrontend"]["Settings"][f"Channel{channel_id}"][key]
         
         print("ODB complete")
         total_events = sum(1 for _ in mfile if not _.header.is_midas_internal_event() and _.header.event_id == 1)
@@ -103,7 +126,7 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
         for channel_id in json_data["Channels"]:
             name = json_data["Channels"][channel_id]["name"]
             satur[name] = 0
-
+        times_bool = True
         for event in mfile:
             if event.header.is_midas_internal_event():
                 continue
@@ -117,36 +140,60 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
 
             for bank_name, bank in event.banks.items():
                 # Skip banks that don't start with 'W'
-                if not bank_name.startswith('W'):
-                    continue
-                
-                # Skip event banks
-                if bank_name[1:4] == '0EV':
-                    continue
-                
-                bank_index = int(bank_name[1:4])
 
-                if str(bank_index) not in json_data["Channels"]:
-                    continue
-                
-                name = json_data["Channels"][str(bank_index)]["name"]
-                if fc and name not in ch_list:
-                    continue
+                if year == 2025:
+                    if not bank_name.startswith('W'):
+                        continue
+                    
+                    # Skip event banks
+                    if bank_name[1:4] == '0EV':
+                        continue
+                    
+                    bank_index = int(bank_name[1:4])
 
-                piedistallo = bank.data[:pretrigger_sample-100].mean()
-                event_data[f'{name}_pedestal'] = piedistallo
-                wf = convert(bank.data, yaml_output[name]["adctovolts"], piedistallo)
-                event_data[f'{name}_WF'] = wf
-                std_V = wf[:pretrigger_sample-100].std()
-                event_data[f'{name}_pedestal_std'] = std_V
+                    if str(bank_index) not in json_data["Channels"]:
+                        continue
+                    
+                    name = json_data["Channels"][str(bank_index)]["name"]
+                    if fc and name not in ch_list:
+                        continue
 
-#                if is_saturato(bank.data, wf, bit = bit):
+                    piedistallo = bank.data[:pretrigger_sample-100].mean()
+                    event_data[f'{name}_pedestal'] = piedistallo
+                    wf = convert(bank.data, yaml_output[name]["adctovolts"], piedistallo)
+                    std_V = wf[:pretrigger_sample-100].std()
+
+                if year == 2024:
+                    channel = np.where(Channel_Enabled)[0][int(bank_name[-1])]
+                    ch_osci = channel + 1
+                    ch_list = [1,2]
+                    if ch_osci not in ch_list:
+                        continue
+                    name = f"Channel{ch_osci}"
+
+                    wf = 1000 * (((bank.data - (bit / 2)) * scale[channel] * 10 / bit) - (position[channel] * scale[channel]))
+                    wf = wf - np.mean(wf[:50])
+                    std_V = np.std(wf[:50])
+                    if times_bool:
+                        times = np.arange(0, 1 / SARA * len(wf), 1 / SARA)
+                        times -= (1 / SARA * len(wf)) * HPOS / 100
+                        times *= 1.e9
+                        times_bool = False
+
+                #
+
+                # if is_saturato(bank.data, wf, bit = bit):
 #                  satur[name] += 1
 #                    event_data[f'{name}_is_satur'] = True
 #                else:
 #                    event_data[f'{name}_is_satur'] = False
+                event_data['SARA'] = SARA
+                event_data['HPOS'] = HPOS/100
                 
 
+                event_data[f'{name}_WF'] = wf
+
+                event_data[f'{name}_pedestal_std'] = std_V
                 ampl = np.max(np.abs(wf))
                 event_data[f'{name}_amplitude'] = ampl
                 t0 = find_t0(wf, ampl*0.1, times)
@@ -170,8 +217,9 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
         output_df = pd.DataFrame(data_for_df)
         #output_df.columns = pd.MultiIndex.from_tuples(output_df.columns)
         conversion = 0.18
-        output_df['wc_x'] = conversion * (output_df['Chamber_x_1_t0'] - output_df['Chamber_x_2_t0'])
-        output_df['wc_y'] = conversion * (output_df['Chamber_y_1_t0'] - output_df['Chamber_y_2_t0'])
+        if year == 2025:
+            output_df['wc_x'] = conversion * (output_df['Chamber_x_1_t0'] - output_df['Chamber_x_2_t0'])
+            output_df['wc_y'] = conversion * (output_df['Chamber_y_1_t0'] - output_df['Chamber_y_2_t0'])
         os.makedirs(f'{op}parquet', exist_ok=True)
         # Write yaml_output to file
         yaml_filename = f'{op}yamls/run{run_index}_info.yaml'
