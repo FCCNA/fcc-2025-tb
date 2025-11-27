@@ -187,8 +187,9 @@ def read_waveform(run_index, path, om, fc, json_data, read_waveforms, write, pat
 #                    event_data[f'{name}_is_satur'] = True
 #                else:
 #                    event_data[f'{name}_is_satur'] = False
-                event_data['SARA'] = SARA
-                event_data['HPOS'] = HPOS/100
+                if year == 2024:
+                    event_data['SARA'] = SARA
+                    event_data['HPOS'] = HPOS/100
                 
 
                 event_data[f'{name}_WF'] = wf
